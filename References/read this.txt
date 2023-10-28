@@ -1,0 +1,20 @@
+if you want to compile the mod you'll need to paste the sequent dlls here
+BoneLib
+FieldInjector
+Il2Cppmscorlib
+Il2CppSystem
+JeviLib
+MelonLoader
+SLZ.Marrow
+SLZ.Marrow.SDK
+Assembly-CSharp
+UnhollowerBaseLib
+UnhollowerRuntimeLib
+Unity.InputSystem
+Unity.RenderPipelines.Universal.Runtime
+UnityEngine
+UnityEngine.AnimationModule
+UnityEngine.AudioModule
+UnityEngine.CoreModule
+UnityEngine.InputLegacyModule
+UnityEngine.PhysicsModule
