@@ -105,7 +105,7 @@ public class FPSController : MonoBehaviour
         {
             arm.transform.localRotation = Quaternion.Euler(0, 0, 0);
         }
-        if (Mod.dovolumetrics.Value == true)
+        if (Mod.doVolumetrics.Value == true)
         {
             Volumerenderer.SetActive(true);
         }
@@ -113,14 +113,5 @@ public class FPSController : MonoBehaviour
         {
             Volumerenderer.SetActive(false);
         }
-    }
-
-    private void OnDestroy()
-    {
-        Mod.isDudeThere = false;
-    }
-    private void OnDisable()
-    {
-        Mod.isDudeThere = false;
     }
 }

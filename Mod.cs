@@ -1,10 +1,10 @@
-﻿using MelonLoader;
-using UnityEngine;
-using Jevil.Spawning;
-using Jevil;
-using BoneLib;
+﻿using BoneLib;
 using Desktop_MP;
-using SLZ.Marrow.Data;
+using Jevil;
+using Jevil.Spawning;
+using MelonLoader;
+using SLZ.Marrow.Pool;
+using UnityEngine;
 
 [assembly: MelonInfo(typeof(Mod), "Desktop MP", "1.1.0", "Void Vapor Inc")]
 [assembly: MelonGame("Stress Level Zero", "BONELAB")]
@@ -12,29 +12,33 @@ namespace Desktop_MP
 {
     public class Mod : MelonMod
     {
-        static public bool isDudeThere;
-        public Spawnable dudeSpawnable;
-        private MelonPreferences_Category modcat;
-        static public MelonPreferences_Entry<bool> dovolumetrics;
+        public static AssetPoolee dudePoolee;
+        public static bool IsDudeThere => dudePoolee != null && dudePoolee.isActiveAndEnabled;
+        public static MelonPreferences_Entry<bool> doVolumetrics;
+
+        private const string dudeBarcode = "VoidVaporInc.DesktopMP.Spawnable.Dude";
+        private static MelonPreferences_Category modCat;
+
+        public static async void SpawnDude()
+        {
+            dudePoolee = await Barcodes.ToSpawnable(dudeBarcode).SpawnAsync(Player.playerHead.position, Quaternion.identity);
+        }
+
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.J) && isDudeThere == false)
+            if (Input.GetKeyDown(KeyCode.J) && IsDudeThere == false)
             {
-                isDudeThere = true;
                 //spawn the dude breoijaboijergbjhearuhgv8934hjf893j48iwkejmdiskwoj4oiwejf (old joke)
-                Barcodes.ToSpawnable("VoidVaporInc.DesktopMP.Spawnable.Dude").Spawn(Player.playerHead.position, Quaternion.identity, true);
+                SpawnDude();
             }
             if (Input.GetKeyDown(KeyCode.T))
             {
-                bool oldEntryValue = dovolumetrics.Value;
-                dovolumetrics.Value = !oldEntryValue; // Toggles the entry boolean
+                bool oldEntryValue = doVolumetrics.Value;
+                doVolumetrics.Value = !oldEntryValue; // Toggles the entry boolean
                 //iirc this doesn't work
             }
         }
-        public void falseDude(LevelInfo levelInfo)
-        {
-            isDudeThere = false;
-        }
+
         public override void OnApplicationStart()
         {
             FieldInjector.SerialisationHandler.Inject<PickupSoundSystem>();
@@ -44,11 +48,11 @@ namespace Desktop_MP
             FieldInjector.SerialisationHandler.Inject<ObjectActivator1>();
             FieldInjector.SerialisationHandler.Inject<FootstepSound1>();
         }
+
         public override void OnInitializeMelon()
         {
-            modcat = MelonPreferences.CreateCategory("DesktopMP");
-            dovolumetrics = modcat.CreateEntry<bool>("Do Volumetrics", false);
-            Hooking.OnLevelInitialized += falseDude;
+            modCat = MelonPreferences.CreateCategory("DesktopMP");
+            doVolumetrics = modCat.CreateEntry<bool>("Do Volumetrics", false);
         }
     }
 }

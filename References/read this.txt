@@ -18,3 +18,4 @@ UnityEngine.AudioModule
 UnityEngine.CoreModule
 UnityEngine.InputLegacyModule
 UnityEngine.PhysicsModule
+UniTask

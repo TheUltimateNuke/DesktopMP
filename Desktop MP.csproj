@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
@@ -39,6 +39,9 @@
     <Reference Include="UnhollowerRuntimeLib">
       <HintPath>.\References\UnhollowerRuntimeLib.dll</HintPath>
     </Reference>
+    <Reference Include="UniTask">
+      <HintPath>.\References\UniTask.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.InputSystem">
       <HintPath>.\References\Unity.InputSystem.dll</HintPath>
     </Reference>
@@ -64,5 +67,7 @@
       <HintPath>.\References\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <PropertyGroup />
 
 </Project>
