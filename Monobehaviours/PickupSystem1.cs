@@ -1,117 +1,143 @@
-using UnityEngine;
-using System;
-using SLZ.Props.Weapons;
-#if DEBUG
 using MelonLoader;
-#endif
+using SLZ.Props.Weapons;
+using System;
+using System.Threading.Tasks;
+using UnityEngine;
+
+// Picks things up via telekinesis.
 public class PickupSystem1 : MonoBehaviour
 {
     public PickupSystem1(IntPtr ptr) : base(ptr) { }
 
     public KeyCode holdKey = KeyCode.E;
-
     public KeyCode fireKey = KeyCode.Mouse0;
-
     public KeyCode throwKey = KeyCode.Mouse1;
-
-    public float throwForce = 10f;
 
     public LayerMask pickupLayerMask;
 
-    public float pickupDistance = 3f;
+    public float throwForce = 40f;
+    public float pickupDistance = 1f; // TODO: needs to be changed within dude spawnable
 
     public Animator playerAnimator;
 
     public GameObject rayCaster;
 
-    public float smoothing = 0.05f;
+    public Gun HeldGun { 
+        get
+        {
+            if (!IsHolding) return null;
+            return HeldObject.GetComponent<Gun>();
+        }
+    }
 
-    private Rigidbody rb;
-    private bool isHolding = false;
-    private Transform heldObject;
+    public Rigidbody HeldRigidbody
+    {
+        get
+        {
+            if (!IsHolding) return null;
+            return HeldObject.GetComponent<Rigidbody>();
+        }
+    }
+
     private PickupSoundSystem soundSystem;
-    private Gun heldGun;
+
+    private bool IsHolding => HeldObject != null;
+
+    public Transform HeldObject { get; private set; }
+
+    // TO BE CONVERTED INTO FIELDS
+    private const float autoDropDistance = 5f; // once the distance between the player and the object is this distance or higher, it will auto-drop
+    private const float smoothTime = 10f;
+    private const float reloadTime = 1f; // time in seconds it takes to reload
+    //
+
+    public async void ReloadGunWithoutHands(Gun gun) // untested
+    {
+        gun.EjectCartridge();
+        await Task.Delay(Mathf.RoundToInt(reloadTime * 60)); // TODO: add sounds or animations to indicate reloading.
+        gun.MagazineState.AddCartridge(gun.defaultMagazine.rounds, gun.MagazineState.cartridgeData);
+    }
+
+    private void PickupObject(Transform toPickup)
+    {
+        playerAnimator.SetInteger("Swipe", 1);
+        HeldObject = toPickup;
+        HeldRigidbody.useGravity = false;
+        MelonCoroutines.Start(soundSystem.PlayRandomSound());
+    }
+
+    private void ThrowHeldObject()
+    {
+        HeldRigidbody.AddForce(rayCaster.transform.forward.normalized * throwForce, ForceMode.Impulse);
+        DropHeldObject();
+    }
+
+    private void DropHeldObject()
+    {
+        playerAnimator.SetInteger("Swipe", 0);
+        HeldRigidbody.useGravity = true;
+        HeldObject = null;
+    }
 
     private void Start()
     {
         soundSystem = GetComponent<PickupSoundSystem>();
-        rb = GetComponent<Rigidbody>();
     }
 
     private void Update()
     {
+        if (IsHolding && Vector3.Distance(HeldObject.position, rayCaster.transform.position) >= autoDropDistance) DropHeldObject();
+
         if (Input.GetKeyDown(holdKey))
         {
-            // Check if there is an object in front of the player that can be picked up
-            RaycastHit hit;
-            if (Physics.Raycast(rayCaster.transform.position, rayCaster.transform.forward, out hit, maxDistance:pickupDistance, pickupLayerMask) && !hit.rigidbody.isKinematic && !hit.collider.gameObject.name.Contains("Dude"))
+            if (!IsHolding && Physics.Raycast(rayCaster.transform.position, rayCaster.transform.forward, out RaycastHit hit, maxDistance: pickupDistance, pickupLayerMask) && hit.rigidbody != null && !hit.collider.gameObject.name.Contains("Dude"))
             {
-                // Pick up the object
-                playerAnimator.SetInteger("Swipe", 1);
-                //idk why but it no work
-                //soundSystem.StartCoroutine("PlayRandomSound");
-                heldObject = hit.transform;
-                ObjectInteractable i = heldObject.gameObject.AddComponent<ObjectInteractable>();
-                i.smoothTime = smoothing;
-                GameObject obj = new GameObject("HoldTarget");
-                obj.transform.parent = rayCaster.transform;
-                obj.transform.localPosition = Vector3.zero;
-                obj.transform.localRotation = Quaternion.identity;
-                obj.transform.localScale = Vector3.zero;
-                obj.transform.position = rayCaster.transform.position + rayCaster.transform.forward * 1.5f;
-                i.target = obj;
-                isHolding = true;
-                heldGun = heldObject.GetComponent<Gun>();
-#if DEBUG
-                MelonLogger.Msg($"Held gun object name: { heldGun.gameObject.name}");
-                MelonLogger.Msg($"Held object name: {heldObject.gameObject.name}");
-                MelonLogger.Msg($"Object to search for held gun name: {hit.rigidbody.gameObject.name}");
-#endif
+                PickupObject(hit.transform);
+            }
+            else if (IsHolding)
+            {
+                DropHeldObject();
             }
         }
 
-        if (Input.GetKeyUp(holdKey))
+        if (Input.GetKeyDown(throwKey) && IsHolding)
         {
-            // Throw the object
-            if (isHolding)
-            {
-                Destroy(heldObject.GetComponent<ObjectInteractable>());
-                Destroy(rayCaster.transform.GetChild(0).gameObject);
-                playerAnimator.SetInteger("Swipe", 0);
-                heldObject = null;
-                isHolding = false;
-                heldGun = null;
-            }
+            ThrowHeldObject();
         }
 
-        if (Input.GetKeyDown(throwKey) && isHolding)
-        {
-            Destroy(heldObject.GetComponent<ObjectInteractable>());
-            Destroy(rayCaster.transform.GetChild(0).gameObject);
-            heldObject.GetComponent<Rigidbody>().AddForce(rayCaster.transform.forward * throwForce, ForceMode.Impulse);
-            playerAnimator.SetInteger("Swipe", 0);
-            heldObject = null;
-            isHolding = false;
-            heldGun = null;
-        }
-
-        if (isHolding)
-        {
-            heldObject.transform.rotation = Quaternion.LookRotation(heldObject.transform.position - rayCaster.transform.position);
-        }
-
-        if (isHolding && heldGun != null)
+        if (IsHolding && HeldGun != null)
         {
             if (Input.GetKey(fireKey))
             {
-                heldGun.Fire();
+                HeldGun.Fire();
             }
             if (Input.GetKeyUp(fireKey))
             {
-                heldGun.CeaseFire();
+                HeldGun.CeaseFire();
+                if (HeldGun.AmmoCount() <= 0)
+                {
+                    ReloadGunWithoutHands(HeldGun);
+                }
             }
         }
 
+    }
+
+    private void FixedUpdate()
+    {
+        if (IsHolding)
+        {
+            Vector3 newPos = Vector3.MoveTowards(HeldObject.position, rayCaster.transform.position + (rayCaster.transform.forward * pickupDistance), smoothTime * Time.deltaTime);
+            newPos = Vector3.Lerp(HeldObject.position, newPos, 0.75f);
+
+            Rigidbody rb = HeldObject.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.MovePosition(newPos);
+                rb.MoveRotation(Quaternion.LookRotation(HeldObject.position - rayCaster.transform.position));
+            }
+        }
+        
     }
 
 }

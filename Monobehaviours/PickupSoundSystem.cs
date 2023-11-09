@@ -5,6 +5,7 @@ using Random = UnityEngine.Random;
 
 public class PickupSoundSystem : MonoBehaviour
 {
+
     public PickupSoundSystem(IntPtr ptr) : base(ptr) { }
 
     public AudioClip[] pickupSounds;
@@ -19,7 +20,7 @@ public class PickupSoundSystem : MonoBehaviour
         audioSource.playOnAwake = false;
     }
 
-    private IEnumerator PlayRandomSound()
+    public IEnumerator PlayRandomSound()
     {
         yield return new WaitForSeconds(Random.Range(0f, soundDelay));
 

@@ -44,8 +44,6 @@ namespace Desktop_MP
             FieldInjector.SerialisationHandler.Inject<PickupSoundSystem>();
             FieldInjector.SerialisationHandler.Inject<PickupSystem1>();
             FieldInjector.SerialisationHandler.Inject<FPSController>();
-            FieldInjector.SerialisationHandler.Inject<ObjectInteractable>();
-            FieldInjector.SerialisationHandler.Inject<ObjectActivator1>();
             FieldInjector.SerialisationHandler.Inject<FootstepSound1>();
         }
 
