@@ -67,7 +67,4 @@
       <HintPath>.\References\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-
-  <PropertyGroup />
-
 </Project>
