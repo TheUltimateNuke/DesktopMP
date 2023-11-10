@@ -6,7 +6,7 @@ public class FPSController : MonoBehaviour
 {
     public FPSController(IntPtr ptr) : base(ptr) { }
 
-    public GameObject Volumerenderer;
+    public GameObject volumeRenderer;
 
     public float moveSpeed = 5f;
     public float runSpeed = 10f;
@@ -43,7 +43,7 @@ public class FPSController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         playerCamera = GetComponentInChildren<Camera>();
         Cursor.lockState = CursorLockMode.Locked;
-        Volumerenderer = gameObject.transform.Find("Camera").GetChild(1).gameObject;
+        volumeRenderer = gameObject.transform.Find("Camera").GetChild(1).gameObject;
     }
 
     public int GetVertical() 
@@ -74,16 +74,15 @@ public class FPSController : MonoBehaviour
         moveDirection = transform.TransformDirection(moveDirection);
         if (IsGrounded())
         {
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 rb.AddForce(Vector3.up * jumpForce);
             }
         }
         rb.MovePosition(transform.position + moveDirection * Time.fixedDeltaTime);
 
-        if (Input.GetKeyDown(KeyCode.H)) { 
-            gameObject.transform.position = BoneLib.Player.playerHead.transform.position + new Vector3(0.3f,0,0);
-            
+        if (Input.GetKeyDown(KeyCode.H)) {
+            gameObject.transform.position = BoneLib.Player.playerHead.transform.position + new Vector3(0.3f, 0, 0);
         }
     }
 
@@ -107,11 +106,11 @@ public class FPSController : MonoBehaviour
         }
         if (Mod.doVolumetrics.Value == true)
         {
-            Volumerenderer.SetActive(true);
+            volumeRenderer.SetActive(true);
         }
         else
         {
-            Volumerenderer.SetActive(false);
+            volumeRenderer.SetActive(false);
         }
     }
 }
